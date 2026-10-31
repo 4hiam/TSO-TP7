@@ -1,0 +1,91 @@
+{
+  "tp_metadata": {
+    "tp_id": "TSO-2026-TP7",
+    "title": "TP N° 7: Memoria Virtual - TLB, Reemplazo de Páginas, Belady, Working-Set y Tratamiento de Fallos",
+    "catedra": "Teoría de Sistemas Operativos - UNJu Facultad de Ingeniería",
+    "docentes": "Ing. María Fernanda Vázquez (Titular) | Ing. Fabio D. Argañaraz (JTP)",
+    "version": "3.0.0"
+  },
+  "security": {
+    "algorithm": "SHA-256 + Salted HMAC",
+    "protected": true
+  },
+  "max_score": 100,
+  "exercises": {
+    "ej1_fifo_fallos": {
+      "weight": 7,
+      "hash": "76d10ed5d1a1aecaa7ba634b90ddee188c321ba0785e71275d8638e9db31c566",
+      "feedback": "Consultar Diapositivas U9 pág. 25-27 | Silberschatz et al. (7ma Ed., 2006) Cap. 9.4"
+    },
+    "ej2_nfu_envejecimiento": {
+      "weight": 7,
+      "hash": "2efb7a31fa3d79d424df4c13710b353f6a49cae69580eb8ca3fd847d009bf64b",
+      "feedback": "Consultar Diapositivas U9 pág. 38-43 | Tanenbaum & Bos (4ta Ed., 2015) Cap. 3.4"
+    },
+    "ej3_nru_reemplazo": {
+      "weight": 7,
+      "hash": "e8bf8fa86f252086d0a78aaf7da63bfbc071de0ff05ec3771282b2dc9479c4e4",
+      "feedback": "Consultar Diapositivas U9 pág. 34-37 | Tanenbaum & Bos (4ta Ed., 2015) Cap. 3.4"
+    },
+    "ej4_optimo_reemplazo": {
+      "weight": 7,
+      "hash": "f761d55bbcde4cb0bae792d9b69ec98231b09c2ee3e934b0a4bf14417a4d690b",
+      "feedback": "Consultar Diapositivas U9 pág. 30-31 | Silberschatz et al. (7ma Ed., 2006) Cap. 9.4"
+    },
+    "ej5_lru_reemplazo": {
+      "weight": 7,
+      "hash": "64252274125ff602c198551c4e7e8fdc2eca78adec236207d217909c8a9a714c",
+      "feedback": "Consultar Diapositivas U9 pág. 32-33 | Silberschatz et al. (7ma Ed., 2006) Cap. 9.4"
+    },
+    "ej6_reloj_reemplazo": {
+      "weight": 7,
+      "hash": "aafded27a677fe51b513e60de36367bc0a5014d3368393162150b05e2135d279",
+      "feedback": "Consultar Diapositivas U9 pág. 28-29 | Tanenbaum & Bos (4ta Ed., 2015) Cap. 3.4"
+    },
+    "ej7_reemplazo_local_global": {
+      "weight": 6,
+      "hash": "3e6bf48a56a5b9d5eb2d9f7dcc61bdd8c5cf4491d2685f39cc6266732d3ad399",
+      "feedback": "Consultar Diapositivas U9 pág. 56 | Silberschatz et al. (7ma Ed., 2006) Cap. 9.5"
+    },
+    "ej8_paginacion_hex": {
+      "weight": 7,
+      "hash": "60c5b8bc43aa62751540817877813a6297df8223d9776b3f352b2ff7b16c43cf",
+      "feedback": "Consultar Silberschatz et al. (7ma Ed., 2006) Cap. 8.4"
+    },
+    "ej9_anomalia_belady": {
+      "weight": 7,
+      "hash": "4a58d8591bbce844ea2e84cb2bd23f6c20b8b3a355868614001126af3d2952b6",
+      "feedback": "Consultar Diapositivas U9 pág. 45 | Silberschatz et al. (7ma Ed., 2006) Cap. 9.4 / Tanenbaum & Bos (4ta Ed.) Cap. 3.4"
+    },
+    "ej10_tlb_eat": {
+      "weight": 7,
+      "hash": "f5f54b5d84b70665f9f70aed0b694acb32fbf9bbd5e081ce546c79911bb5756e",
+      "feedback": "Consultar Diapositivas U9 pág. 17-21 | Silberschatz et al. (7ma Ed., 2006) Cap. 8.4"
+    },
+    "ej11_working_set": {
+      "weight": 6,
+      "hash": "99a745ac1f7deefdb47e003f8f0fd0855d0f0b48fbec577e52d5867e9063effe",
+      "feedback": "Consultar Diapositivas U9 pág. 50-54 | Silberschatz et al. (7ma Ed., 2006) Cap. 9.6"
+    },
+    "ej12_hiperpaginacion_causa": {
+      "weight": 6,
+      "hash": "c6122bde4d70271ce1cad0874b3a8ebc21f3c33a1cb8b3ab370dd62a820c3ed8",
+      "feedback": "Consultar Diapositivas U9 pág. 50 | Silberschatz et al. (7ma Ed., 2006) Cap. 9.6 / Tanenbaum & Bos (4ta Ed.) Cap. 3.4"
+    },
+    "ej13_fallo_pagina_dirty_bit": {
+      "weight": 7,
+      "hash": "592a982babbe71871799984eba83adf28874e490757b7bd6488b56c1d44676ba",
+      "feedback": "Consultar Silberschatz et al. (7ma Ed., 2006) Cap. 9.2 y 9.4 / Tanenbaum & Bos (4ta Ed.) Cap. 3.4"
+    },
+    "ej14_pff_frecuencia_fallos": {
+      "weight": 6,
+      "hash": "2c66f51ed3a54978a31a8897b8a1c533e3f7dbedd7376d81e2414c0a72fc89f2",
+      "feedback": "Consultar Silberschatz et al. (7ma Ed., 2006) Cap. 9.6 / Diapositivas U9 pág. 55"
+    },
+    "ej15_tamano_pagina_fragmentacion": {
+      "weight": 6,
+      "hash": "27128d959a2ef493227baa664abcb22fd74df95d48092ca439917230539368dc",
+      "feedback": "Consultar Silberschatz et al. (7ma Ed., 2006) Cap. 8.4 y 9.8"
+    }
+  }
+}

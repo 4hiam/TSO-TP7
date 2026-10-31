@@ -1,0 +1,40 @@
+name: GitHub Classroom Autograding - TP 7
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+permissions:
+  checks: write
+  actions: read
+  contents: read
+
+jobs:
+  evaluacion-autograding:
+    name: Autograding Tests - TP7
+    runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, 'skip ci')"
+
+    steps:
+      - name: Checkout del Repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Entorno Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Verificar Archivo de Respuestas Teóricas
+        run: |
+          if [ ! -f "respuestas_tp7.json" ]; then
+            echo "::warning file=respuestas_tp7.json::No se encontró el archivo 'respuestas_tp7.json'. Recuerda resolver los ejercicios interactivos en index.html, exportar tu archivo JSON y colocarlo en la raíz del repositorio."
+          else
+            echo "Archivo 'respuestas_tp7.json' detectado correctamente."
+          fi
+
+      - name: Ejecutar Suite de Evaluación Integral (Teoría + Código Python)
+        run: |
+          python autograder_tp7.py

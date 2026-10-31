@@ -1,0 +1,17 @@
+# Python & Cache
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+
+# Cátedra (Soluciones Privadas)
+rubric_tp7_master.json
+solucion_modelado_logico.md
+quizizz.md
+
+# OS
+.DS_Store
+Thumbs.db
+PLAN.md

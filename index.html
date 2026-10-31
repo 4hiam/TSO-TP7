@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TP N° 7: Memoria Virtual | TSO UNJu FI</title>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS (via CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: ['class', '[data-theme="dark"]'],
+            theme: {
+                extend: {
+                    colors: {
+                        purplebrand: {
+                            50: '#faf5ff',
+                            500: '#8b5cf6',
+                            600: '#7c3aed',
+                            700: '#6d28d9'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header class="app-header">
+        <div class="header-content">
+            <div class="branding">
+                <h1>TSO UNJu FI - TP N° 7</h1>
+                <p>Memoria Virtual: TLB, Reemplazo de Páginas, Anomalía de Belady, Conjunto de Trabajo e Hiperpaginación</p>
+            </div>
+            <div class="controls flex items-center gap-2">
+                <button id="btn-import-json" class="btn-glass text-xs font-semibold px-3 py-1.5" title="Cargar respuestas_tp7.json previo">📂 Cargar</button>
+                <input type="file" id="file-import-input" accept=".json" style="display: none;">
+                <button id="theme-toggle" class="btn-glass" title="Cambiar Tema (Claro / Oscuro)">🌓</button>
+            </div>
+        </div>
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div id="progress-fill" class="progress-fill"></div>
+            </div>
+            <span id="progress-text">0% Completado (0/15)</span>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Identificación del Estudiante -->
+        <section class="card student-info">
+            <h2>📝 Datos del Alumno</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="input-group">
+                    <label for="student-name">Nombre y Apellido:</label>
+                    <input type="text" id="student-name" placeholder="Ej. Juan Pérez">
+                </div>
+                <div class="input-group">
+                    <label for="student-lu">Libreta Universitaria / Legajo:</label>
+                    <input type="text" id="student-lu" placeholder="Ej. L-12345">
+                </div>
+            </div>
+        </section>
+
+        <!-- Consigna General y Alcance del Práctico -->
+        <section class="card instruction-card mb-6">
+            <h2>🎯 Consigna General y Modalidad de Trabajo</h2>
+            <div class="text-xs text-gray-700 dark:text-gray-300 leading-relaxed space-y-2 mt-2">
+                <p><strong>Objetivo:</strong> Aplicar los conceptos fundamentales de memoria virtual mediante la experimentación con simuladores de algoritmos de reemplazo de páginas, traducción asociativa con TLB, la anomalía de Belady, el modelado de conjuntos de trabajo (<em>Working Set</em>) y PFF, y el ciclo completo de tratamiento de fallos de página por el sistema operativo.</p>
+                <p><strong>Alcance Temático:</strong> Este trabajo práctico se concentra específicamente en la traducción de direcciones con TLB y cálculo de EAT, políticas de reposición/reemplazo de páginas (FIFO, LRU, Reloj, NRU, NFU y su variante con envejecimiento, y Óptimo), verificación experimental de la anomalía de Belady, evaluación de demanda bajo el modelo de Conjunto de Trabajo y control por PFF, y una secuencia didáctica de 8 etapas del tratamiento de fallos de página.</p>
+                <p><strong>Modalidad:</strong> Actividades de <em>verificación guiada</em>. Explore sistemáticamente cada laboratorio interactivo, reproduzca los escenarios teóricos, registre los fenómenos y métricas observadas y responda los 15 ejercicios conceptuales y de cálculo.</p>
+                <p><strong>Entrega:</strong> Al completar el 100% de los ejercicios y sus datos personales, presione el botón de exportación para descargar <code>respuestas_tp7.json</code>. Valide su calificación en su entorno local con <code>python autograder_tp7.py</code> antes de realizar el commit/push.</p>
+                <p class="text-purple-600 dark:text-purple-400 font-semibold">💡 <strong>Importante:</strong> Los simuladores forman parte activa del proceso formativo; reproduzca los escenarios y verifique los resultados antes de seleccionar cada respuesta definitiva.</p>
+            </div>
+        </section>
+
+        <!-- SIMULADOR 1: Algoritmos de Reemplazo de Páginas -->
+        <section class="card simulator-card" id="rep-simulator">
+            <h2>🔄 Laboratorio 1: Algoritmos de Reemplazo de Páginas (Paso a Paso)</h2>
+            <p>Ejecuta y compara paso a paso los algoritmos de reemplazo de páginas sobre la memoria principal: <strong>FIFO</strong>, <strong>LRU</strong>, <strong>Reloj (Segunda Oportunidad)</strong>, <strong>NRU (Clases R/M)</strong>, <strong>Envejecimiento (Aging, variante de NFU)</strong> y <strong>Óptimo</strong>. Visualiza aciertos (<em>hits</em>), fallos de página, bits <em>R/M</em>, registros binarios de envejecimiento de 8 bits y la aguja del reloj.</p>
+
+            <!-- Selector de Traza -->
+            <div class="flex flex-wrap gap-2 mb-4">
+                <span class="text-xs font-bold uppercase tracking-wider text-gray-500 self-center mr-2">Secuencia:</span>
+                <button id="btn-trace-tp" class="btn-primary text-xs active">📋 1. Traza Canónica (0 1 7 2 3 2 7 1 3)</button>
+                <button id="btn-trace-diapo" class="btn-secondary text-xs">🎓 2. Diapositivas U9 (A B C D A B E A B C D E)</button>
+                <button id="btn-trace-belady" class="btn-secondary text-xs">💥 3. Belady (0 1 2 3 0 1 4 0 1 2 3 4)</button>
+            </div>
+
+            <!-- Controles del Algoritmo -->
+            <div class="simulator-controls">
+                <div class="flex items-center gap-2">
+                    <label class="text-sm font-semibold">Algoritmo:</label>
+                    <select id="select-rep-algo" class="px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-white/50 dark:bg-slate-800 text-sm font-semibold">
+                        <option value="fifo">FIFO (First-In, First-Out)</option>
+                        <option value="lru">LRU (Menos Recientemente Usada)</option>
+                        <option value="clock">Reloj (Segunda Oportunidad)</option>
+                        <option value="nru">NRU (Clases R/M)</option>
+                        <option value="aging">Envejecimiento (Aging, variante de NFU)</option>
+                        <option value="opt">Óptimo (OPT / MIN de Belady)</option>
+                    </select>
+                </div>
+                <div class="flex items-center gap-2">
+                    <label class="text-sm font-semibold">Marcos:</label>
+                    <input type="number" id="input-num-frames" min="2" max="6" value="4" class="w-16 px-2 py-1 text-center rounded border border-gray-300 dark:border-gray-700 bg-white/50 dark:bg-slate-800 text-sm font-bold">
+                </div>
+                <button id="btn-rep-step" class="btn-primary text-sm font-bold">⏭️ Siguiente Referencia (<span id="rep-step-disp">1/9</span>)</button>
+                <button id="btn-rep-all" class="btn-secondary text-sm">⚡ Ejecutar Completo</button>
+                <button id="btn-rep-reset" class="btn-secondary text-sm">🔄 Reiniciar</button>
+            </div>
+
+            <!-- Supuestos de Hardware y Simulación en NRU -->
+            <div class="mt-3 p-2.5 bg-blue-50/70 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-lg text-[11px] text-blue-900 dark:text-blue-200 leading-relaxed">
+                <strong>ℹ️ Modelado de Hardware en NRU y Aging:</strong>
+                <ul class="list-disc list-inside mt-1 space-y-0.5">
+                    <li><strong>Regla convencional de esta simulación:</strong> para generar estados distintos del bit M en NRU, se considerarán operaciones de escritura las referencias a páginas numéricas impares y a las páginas B y D. Esta regla es exclusivamente didáctica y no forma parte del algoritmo NRU general.</li>
+                    <li><strong>Interrupción de Reloj en NRU:</strong> los bits <em>R</em> se reinician a 0 cada cuatro referencias para modelar una interrupción periódica del reloj del SO.</li>
+                    <li><strong>Envejecimiento (Aging):</strong> tras cada referencia, los registros de 8 bits se desplazan a la derecha incorporando el bit <em>R</em> por la izquierda (MSB) y blanqueando <em>R</em> a 0.</li>
+                </ul>
+            </div>
+
+            <!-- Matriz Visual de Reemplazo -->
+            <div class="matrix-container" id="matrix-container-display">
+                <!-- Generado por JS -->
+            </div>
+
+            <!-- Badges de Estado -->
+            <div class="badge-row">
+                <div class="badge" id="badge-rep-hits">Aciertos (Hits): 0</div>
+                <div class="badge danger" id="badge-rep-faults">Fallos de Página: 0</div>
+                <div class="badge warning" id="badge-rep-rate">Tasa de Fallo: 0%</div>
+                <div class="badge success" id="badge-rep-status">Estado: Listo</div>
+            </div>
+
+            <div id="rep-log" class="log-box"></div>
+
+            <div class="lab-to-exercise-banner">
+                <span class="text-xl">🎯</span>
+                <div>
+                    <strong>Ejercitaciones Asociadas a este Laboratorio:</strong>
+                    <span>Pon a prueba tu comprensión resolviendo el <a href="#card-ej1_fifo_fallos">Ejercicio 1 (FIFO)</a>, <a href="#card-ej2_nfu_envejecimiento">Ejercicio 2 (Aging)</a>, <a href="#card-ej3_nru_reemplazo">Ejercicio 3 (NRU)</a>, <a href="#card-ej4_optimo_reemplazo">Ejercicio 4 (Óptimo)</a>, <a href="#card-ej5_lru_reemplazo">Ejercicio 5 (LRU)</a>, <a href="#card-ej6_reloj_reemplazo">Ejercicio 6 (Reloj)</a> y <a href="#card-ej7_reemplazo_local_global">Ejercicio 7 (Reemplazo Local/Global)</a>.</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- SIMULADOR 2: La Anomalía de Belady -->
+        <section class="card simulator-card" id="belady-simulator">
+            <h2>💥 Laboratorio 2: La Anomalía de Belady (3 Marcos vs 4 Marcos)</h2>
+            <p>Demuestra el descubrimiento de László Bélády (1969): bajo FIFO, <strong>asignar más memoria física provoca paradójicamente MÁS fallos de página</strong> sobre la secuencia <code>0, 1, 2, 3, 0, 1, 4, 0, 1, 2, 3, 4</code>.</p>
+
+            <div class="split-grid">
+                <div class="split-card">
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="font-bold text-sm text-blue-500">FIFO con 3 Marcos de RAM</h3>
+                        <span class="badge success text-xs font-bold" id="badge-belady-3m">9 Fallos</span>
+                    </div>
+                    <div id="belady-matrix-3m" class="matrix-container overflow-x-auto text-xs"></div>
+                </div>
+
+                <div class="split-card">
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="font-bold text-sm text-rose-500">FIFO con 4 Marcos de RAM (¡MÁS MEMORIA!)</h3>
+                        <span class="badge danger text-xs font-bold" id="badge-belady-4m">10 Fallos (¡ANOMALÍA!)</span>
+                    </div>
+                    <div id="belady-matrix-4m" class="matrix-container overflow-x-auto text-xs"></div>
+                </div>
+            </div>
+
+            <div class="p-3 bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 rounded-lg text-xs leading-relaxed">
+                <strong>💡 Explicación Científica:</strong> FIFO no es un algoritmo de pila y no garantiza la propiedad de inclusión. Por ello, el conjunto de páginas residentes con tres marcos no necesariamente es subconjunto del conjunto residente con cuatro marcos, y el aumento de memoria puede producir más fallos de página.
+            </div>
+
+            <div class="lab-to-exercise-banner">
+                <span class="text-xl">🎯</span>
+                <div>
+                    <strong>Ejercitaciones Asociadas a este Laboratorio:</strong>
+                    <span>Pon a prueba tu comprensión resolviendo el <a href="#card-ej9_anomalia_belady">Ejercicio 9 (Anomalía de Belady y Algoritmos de Pila)</a>.</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- CALCULADORA 3: MMU con TLB y Calculadora de EAT -->
+        <section class="card simulator-card" id="tlb-simulator">
+            <h2>⚡ Laboratorio 3: TLB, Tiempo de Acceso Efectivo (EAT) y Traducción MMU</h2>
+            <p>Calculadora interactiva de Tiempo de Acceso Efectivo (<em>EAT</em>) con memoria asociativa TLB (Translation Lookaside Buffer). Experimenta variando la tasa de acierto asociativa (<em>&alpha;</em>) y observa el impacto directo en el tiempo medio de traducción en nanosegundos.</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div class="input-group">
+                    <label>Tasa de Acierto TLB (&alpha;): <span id="lbl-alpha" class="font-bold text-purple-600">90%</span></label>
+                    <input type="range" id="slider-alpha" min="50" max="99" value="90" class="w-full">
+                </div>
+                <div class="input-group">
+                    <label>Tiempo Acceso TLB: <span id="lbl-t-tlb" class="font-bold">20 ns</span></label>
+                    <input type="range" id="slider-t-tlb" min="5" max="40" value="20" class="w-full">
+                </div>
+                <div class="input-group">
+                    <label>Tiempo Acceso RAM: <span id="lbl-t-ram" class="font-bold">100 ns</span></label>
+                    <input type="range" id="slider-t-ram" min="50" max="200" value="100" class="w-full">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="p-4 bg-gray-50 dark:bg-slate-800/60 rounded-xl border border-gray-200 dark:border-gray-700">
+                    <h3 class="font-bold text-sm mb-2 text-purple-500">Fórmula Canónica de EAT</h3>
+                    <div class="font-mono text-xs mb-2">EAT = &alpha; &times; (t_tlb + t_ram) + (1 - &alpha;) &times; (t_tlb + 2 &times; t_ram)</div>
+                    <div class="text-sm font-semibold text-gray-600 dark:text-gray-300" id="eat-calc-step">
+                        EAT = 0.90 &times; (120 ns) + 0.10 &times; (220 ns) = 108 + 22
+                    </div>
+                    <div class="text-2xl font-extrabold text-purple-600 mt-2" id="eat-final-val">130.00 ns</div>
+                    <div class="text-[11px] text-gray-500 dark:text-gray-400 mt-2 italic leading-tight">
+                        <strong>Supuestos del modelo:</strong> la página está presente en memoria principal, la tabla tiene un solo nivel y no se consideran costos adicionales de actualización ni fallos de página.
+                    </div>
+                </div>
+
+                <div class="p-4 bg-gray-50 dark:bg-slate-800/60 rounded-xl border border-gray-200 dark:border-gray-700 flex flex-col justify-center">
+                    <h3 class="font-bold text-sm mb-1 text-emerald-500">Reducción porcentual del tiempo de acceso respecto del modelo sin TLB</h3>
+                    <div class="text-xs text-gray-500 dark:text-gray-400 mb-2" id="eat-sin-tlb-desc">Traducción mediante tabla de páginas en RAM, sin TLB: dos accesos a memoria (200 ns).</div>
+                    <div class="text-sm font-bold text-emerald-600" id="eat-speedup">Reducción del tiempo de acceso: 35.0% respecto del acceso sin TLB</div>
+                </div>
+            </div>
+
+            <!-- Panel de Traducción a Dirección Física Completa (Página + Desplazamiento -> Dirección Física) -->
+            <div class="mt-4 p-4 bg-purple-50/60 dark:bg-slate-800/80 rounded-xl border border-purple-200 dark:border-purple-800" id="mmu-panel">
+                <div class="flex flex-wrap justify-between items-center gap-2 mb-3">
+                    <h3 class="font-bold text-sm text-purple-700 dark:text-purple-300">🗺️ Traducción Completa de Dirección Lógica a Física (MMU)</h3>
+                    <span class="badge text-xs font-mono">dir_física = marco × tam_pág + desp</span>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+                    <div class="input-group">
+                        <label class="text-xs font-semibold">Dirección Lógica (Hex o Dec):</label>
+                        <input type="text" id="input-mmu-log-addr" value="0x065C" class="px-2.5 py-1.5 text-xs font-mono font-bold rounded border border-gray-300 dark:border-gray-700 bg-white/70 dark:bg-slate-900 text-center">
+                    </div>
+                    <div class="input-group">
+                        <label class="text-xs font-semibold">Tamaño de Página:</label>
+                        <select id="select-mmu-page-size" class="px-2.5 py-1.5 text-xs font-bold rounded border border-gray-300 dark:border-gray-700 bg-white/70 dark:bg-slate-900">
+                            <option value="512">512 Bytes (9 bits de offset)</option>
+                            <option value="1024">1024 Bytes (10 bits de offset)</option>
+                            <option value="4096">4096 Bytes (12 bits de offset)</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label class="text-xs font-semibold">Marco Físico en Tabla:</label>
+                        <input type="number" id="input-mmu-frame-num" min="0" max="64" value="10" class="px-2.5 py-1.5 text-xs font-mono font-bold rounded border border-gray-300 dark:border-gray-700 bg-white/70 dark:bg-slate-900 text-center">
+                    </div>
+                </div>
+                <div class="p-3 bg-white/80 dark:bg-slate-900/80 rounded-lg border border-purple-200 dark:border-purple-900/60 font-mono text-xs text-gray-700 dark:text-gray-300 space-y-1" id="mmu-trans-calc-steps">
+                    <!-- Calculado dinámicamente por app.js -->
+                </div>
+            </div>
+
+            <div class="lab-to-exercise-banner">
+                <span class="text-xl">🎯</span>
+                <div>
+                    <strong>Ejercitaciones Asociadas a este Laboratorio:</strong>
+                    <span>Pon a prueba tu comprensión resolviendo el <a href="#card-ej8_paginacion_hex">Ejercicio 8 (Paginación y Traducción Física)</a>, <a href="#card-ej10_tlb_eat">Ejercicio 10 (Tiempo de Acceso Efectivo TLB)</a> y <a href="#card-ej15_tamano_pagina_fragmentacion">Ejercicio 15 (Tamaño de Página y Fragmentación)</a>.</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- SIMULADOR 4: Conjunto de Trabajo (Working-Set) e Hiperpaginación -->
+        <section class="card simulator-card" id="ws-simulator">
+            <h2>🌊 Laboratorio 4: Working Set e Hiperpaginación mediante Trazas Simuladas</h2>
+            <p>Visualiza el <strong>Working Set <em>W(t, &Delta;)</em></strong> a partir de trazas de referencias con una ventana móvil de tamaño <em>&Delta;</em>. Observa cómo, al modificar la ventana o la cantidad de marcos disponibles, la demanda total puede superar la memoria física disponible y provocar hiperpaginación.</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div class="input-group">
+                    <label>Tamaño de Ventana (&Delta;): <span id="lbl-ws-delta" class="font-bold">10 referencias</span></label>
+                    <input type="range" id="slider-ws-delta" min="3" max="10" value="10" class="w-full">
+                </div>
+                <div class="input-group">
+                    <label>Marcos Físicos de RAM:</label>
+                    <input type="number" id="input-ws-ram" min="6" max="20" value="10" class="w-full px-3 py-1.5 rounded border border-gray-300 dark:border-gray-700 bg-white/50 dark:bg-slate-800 text-sm font-bold">
+                </div>
+                <div class="input-group flex items-end">
+                    <button id="btn-ws-eval" class="btn-primary w-full h-[42px]">🔍 Evaluar Estado del Sistema</button>
+                </div>
+            </div>
+
+            <div class="p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-slate-800/60 mb-4" id="ws-alert-box">
+                <div class="flex justify-between items-center">
+                    <span class="font-bold text-base" id="ws-status-title">⏳ Evaluando estado del sistema...</span>
+                    <span class="badge" id="badge-ws-demand">Demanda: - / - Marcos</span>
+                </div>
+                <div class="text-xs mt-2 text-gray-500 dark:text-gray-400" id="ws-details-text">
+                    Iniciando cálculo analítico de W(t, &Delta;) a partir de trazas de procesos...
+                </div>
+            </div>
+
+            <!-- Simulador Interactivo: Frecuencia de Fallos de Página (PFF - Page-Fault Frequency) -->
+            <div class="p-4 bg-blue-50/60 dark:bg-slate-800/80 rounded-xl border border-blue-200 dark:border-blue-800">
+                <div class="flex flex-wrap justify-between items-center gap-2 mb-2">
+                    <h3 class="font-bold text-sm text-blue-700 dark:text-blue-300">📈 Simulador Interactivo: Control por Frecuencia de Fallos (PFF)</h3>
+                    <span class="badge text-xs font-semibold" id="badge-pff-status">PFF: Evaluación en Vivo</span>
+                </div>
+                <p class="text-xs text-gray-600 dark:text-gray-300 leading-relaxed mb-3">
+                    La estrategia <strong>PFF (<em>Page-Fault Frequency</em>)</strong> establece dos umbrales dinámicos: un <em>límite inferior</em> (<em>U</em><sub>min</sub>) y un <em>límite superior</em> (<em>U</em><sub>max</sub>). Modifica los controles interactivos para observar cómo el sistema operativo adapta dinámicamente la asignación de marcos de un proceso.
+                </p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+                    <div class="input-group">
+                        <label class="text-xs font-semibold">Tasa Observada (<em>F</em>): <span id="lbl-pff-rate" class="font-bold text-purple-600 dark:text-purple-400">45%</span></label>
+                        <input type="range" id="slider-pff-rate" min="0" max="100" value="45" class="w-full">
+                    </div>
+                    <div class="input-group">
+                        <label class="text-xs font-semibold">Límite Inferior (<em>U</em><sub>min</sub>): <span id="lbl-pff-low" class="font-bold text-emerald-600">20%</span></label>
+                        <input type="range" id="slider-pff-low" min="5" max="50" value="20" class="w-full">
+                    </div>
+                    <div class="input-group">
+                        <label class="text-xs font-semibold">Límite Superior (<em>U</em><sub>max</sub>): <span id="lbl-pff-high" class="font-bold text-rose-600">60%</span></label>
+                        <input type="range" id="slider-pff-high" min="30" max="95" value="60" class="w-full">
+                    </div>
+                    <div class="input-group">
+                        <label class="text-xs font-semibold">Marcos Asignados (<em>m</em>):</label>
+                        <input type="number" id="input-pff-frames" min="1" max="16" value="4" class="px-2.5 py-1.5 text-xs font-bold rounded border border-gray-300 dark:border-gray-700 bg-white/70 dark:bg-slate-900 text-center">
+                    </div>
+                </div>
+                <div id="pff-decision-card" class="p-3 rounded-lg border border-purple-200 dark:border-purple-800 bg-white/80 dark:bg-slate-900/80 text-xs font-medium space-y-1">
+                    <!-- Calculado dinámicamente por app.js -->
+                </div>
+            </div>
+
+            <div class="lab-to-exercise-banner">
+                <span class="text-xl">🎯</span>
+                <div>
+                    <strong>Ejercitaciones Asociadas a este Laboratorio:</strong>
+                    <span>Pon a prueba tu comprensión resolviendo el <a href="#card-ej11_working_set">Ejercicio 11 (Modelo de Conjunto de Trabajo)</a>, <a href="#card-ej12_hiperpaginacion_causa">Ejercicio 12 (Causa Primaria de Hiperpaginación)</a> y <a href="#card-ej14_pff_frecuencia_fallos">Ejercicio 14 (Control por Frecuencia PFF)</a>.</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- SIMULADOR 5: Tratamiento de un Fallo de Página (Page Fault Handling) -->
+        <section class="card simulator-card" id="pagefault-simulator">
+            <h2>🛠️ Laboratorio 5: Tratamiento de un Fallo de Página (Paso a Paso)</h2>
+            <p>Sigue una secuencia didáctica de <strong>8 etapas que representa el tratamiento general de un fallo de página</strong> entre el hardware de la MMU y el manejador del Sistema Operativo. Observa la verificación del bit de presencia <em>P</em>, la selección de víctima, la condición del bit sucio <em>M</em> (escritura obligatoria a disco swap) y el reinicio transparente de la instrucción.</p>
+
+            <!-- Selector de Escenario de Fallo -->
+            <div class="flex flex-wrap gap-2 mb-4 items-center">
+                <span class="text-xs font-bold uppercase tracking-wider text-gray-500 self-center mr-2">Escenario:</span>
+                <button id="btn-pf-scene-free" class="btn-primary text-xs active">🌟 1. Marco Libre Disponible</button>
+                <button id="btn-pf-scene-clean" class="btn-secondary text-xs">🧹 2. Memoria Llena - Víctima Limpia (M=0)</button>
+                <button id="btn-pf-scene-dirty" class="btn-secondary text-xs">💾 3. Memoria Llena - Víctima Modificada (M=1)</button>
+                <button id="btn-pf-scene-invalid" class="btn-secondary text-xs">🚫 4. Dirección Inválida (Violación de Acceso)</button>
+            </div>
+
+            <!-- Controles del Simulador de Fallo -->
+            <div class="simulator-controls mb-4">
+                <button id="btn-pf-step" class="btn-primary text-sm font-bold">⏭️ Siguiente Etapa (<span id="pf-step-disp">Etapa 1 / 8</span>)</button>
+                <button id="btn-pf-all" class="btn-secondary text-sm">⚡ Ciclo Completo</button>
+                <button id="btn-pf-reset" class="btn-secondary text-sm">🔄 Reiniciar</button>
+            </div>
+
+            <!-- Visualización Gráfica del Flujo de 8 Etapas -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5 mb-4" id="pf-steps-grid">
+                <!-- Generado dinámicamente por app.js con estilos pf-step-card -->
+            </div>
+
+            <!-- Panel Detallado del Estado Actual del Sistema Operativo -->
+            <div class="p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-slate-800/60 mb-3" id="pf-detail-box">
+                <div class="flex justify-between items-center mb-1">
+                    <span class="font-bold text-sm text-purple-600 dark:text-purple-400" id="pf-detail-title">Etapa 1: Emisión de Dirección Lógica por la CPU</span>
+                    <span class="badge" id="pf-badge-mode">Modo: Usuario (CPU)</span>
+                </div>
+                <div class="text-xs text-gray-600 dark:text-gray-300 leading-relaxed" id="pf-detail-desc">
+                    El proceso en ejecución solicita leer o escribir en la dirección virtual 0x065C (Página lógica 3).
+                </div>
+            </div>
+
+            <div id="pf-log" class="log-box"></div>
+
+            <div class="lab-to-exercise-banner">
+                <span class="text-xl">🎯</span>
+                <div>
+                    <strong>Ejercitaciones Asociadas a este Laboratorio:</strong>
+                    <span>Pon a prueba tu comprensión resolviendo el <a href="#card-ej13_fallo_pagina_dirty_bit">Ejercicio 13 (Fallo con Víctima Modificada M=1)</a>.</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- BANCO DE EJERCICIOS EVALUATIVOS (15 Ejercicios) -->
+        <div id="exercises-container">
+            <!-- Renderizado por app.js -->
+        </div>
+
+        <!-- Exportación de Respuestas -->
+        <div class="export-section">
+            <button id="btn-export" class="btn-export" disabled>Exportar Respuestas (.json)</button>
+            <p class="export-hint">Completa todos los ejercicios y tus datos para descargar 'respuestas_tp7.json' y evaluar con autograder_tp7.py.</p>
+        </div>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
