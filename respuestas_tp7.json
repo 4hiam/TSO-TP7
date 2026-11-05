@@ -1,0 +1,23 @@
+{
+  "tp_id": "TSO-2026-TP7",
+  "student": {
+    "name": "Adrián Benitez",
+    "lu": "LIE 0093"
+  },
+  "timestamp": "2026-11-05T23:53:17.038Z",
+  "ej6_reloj_reemplazo": "pagina_2",
+  "ej5_lru_reemplazo": "pagina_1",
+  "ej4_optimo_reemplazo": "pagina_0",
+  "ej3_nru_reemplazo": "clase_0_p1_p2",
+  "ej2_nfu_envejecimiento": "pagina_c_marco_2",
+  "ej1_fifo_fallos": "5_fallos",
+  "ej7_reemplazo_local_global": "local_mismo_proceso_global_todos",
+  "ej8_paginacion_hex": "p3_d92_dir5212",
+  "ej9_anomalia_belady": "10_fallos",
+  "ej10_tlb_eat": "130_ns",
+  "ej11_working_set": "ws_1_2_5_6_7",
+  "ej12_hiperpaginacion_causa": "suma_working_sets_mayor_ram",
+  "ej13_fallo_pagina_dirty_bit": "escribir_swap_cargar_nueva_actualizar_reiniciar",
+  "ej14_pff_frecuencia_fallos": "asignar_mas_marcos_o_suspender",
+  "ej15_tamano_pagina_fragmentacion": "tres_paginas_1788_bytes"
+}
